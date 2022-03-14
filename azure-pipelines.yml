@@ -24,7 +24,7 @@ steps:
   inputs:
     terraformVersion: '1.1.7'
 
-- task: TerraformTaskV1@0
+- task: TerraformTaskV2@2
   displayName: terraform init
   inputs:
     provider: 'azurerm'
@@ -35,7 +35,7 @@ steps:
     backendAzureRmContainerName: '$(container)'
     backendAzureRmKey: '$(tfstateFile)'
 
-- task: TerraformTaskV1@0
+- task: TerraformTaskV2@2
   inputs:
     provider: 'azurerm'
     command: 'plan'
@@ -61,7 +61,7 @@ steps:
         Write-Host "There is no change detected in Terraform tfplan file"
       }
     workingDirectory: '$(System.DefaultWorkingDirectory)'
-- task: TerraformTaskV1@0
+- task: TerraformTaskV2@2
   displayName: terraform apply tfplan
   condition: eq(variables.anyTfChanges, true)
   inputs:
