@@ -80,46 +80,6 @@ steps:
 #    commandOptions: '-out=tfplan'
 #    environmentServiceNameAzureRM: 'svcconn4lds'
 
-- task: PowerShell@2
-  displayName: detect any terraform change
-  env:
-    ARM_CLIENT_ID: $(AZURE_CLIENT_ID)
-    ARM_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
-    ARM_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
-    ARM_TENANT_ID: $(AZURE_TENANT_ID)
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Write-Host "LASTEXITCODE : $LASTEXITCODE"
-      $plan = $(terraform show -json tfplan | ConvertFrom-Json)
-      $actions = $plan.resource_changes.change.actions
-      Write-Host "Terraform actions : $actions"
-      if (($actions -contains 'create') -or ($actions -contains 'delete') -or ($actions -contains 'update'))
-      {
-        Write-Host "Terraform will perform the following actions : $actions"
-        Write-Host "##vso[task.setvariable variable=anyTfChanges;]true"
-      }
-      else
-      {
-        Write-Host "There is no change detected in Terraform tfplan file"
-      }
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
-
-- task: Bash@3
-  displayName: 'Terraform Plan'
-  env:
-    ARM_CLIENT_ID: $(AZURE_CLIENT_ID)
-    ARM_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
-    ARM_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
-    ARM_TENANT_ID: $(AZURE_TENANT_ID)
-  inputs:
-    targetType: 'inline'
-    script: |
-      set -euo pipefail      
-      terraform plan \
-      -input=false \
-      -out ${BUILD_BUILDNUMBER}.tfplan
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
 
 - task: Bash@3
   displayName: 'Terraform Apply'
