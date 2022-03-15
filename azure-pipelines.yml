@@ -97,29 +97,23 @@ steps:
     workingDirectory: '$(System.DefaultWorkingDirectory)'
 
 - task: Bash@3
-  displayName: 'Terraform Plan'
   inputs:
     targetType: 'inline'
-    #workingDirectory: $(project_folder)
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
     script: |
-      set -euo pipefail
-      
-	    terraform plan \
-        -input=false \
-#        -var="resource_group_name=${AZURE_ENV_RG}" \
-        -out ${BUILD_BUILDNUMBER}.tfplan
-
+      set -euo pipefail      
+      terraform plan \
+      -input=false \
+      -out ${BUILD_BUILDNUMBER}.tfplan
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
 
 - task: Bash@3
   displayName: 'Terraform Apply'
   inputs:
     targetType: 'inline'
     #workingDirectory: $(project_folder)
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
+    workingDirectory: $(System.DefaultWorkingDirectory)
     script: |
       set -euo pipefail
-
       terraform apply \
       -input=false \
       ${BUILD_BUILDNUMBER}.tfplan
