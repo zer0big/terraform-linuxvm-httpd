@@ -4,24 +4,12 @@ trigger:
 variables:
   vmImageName: 'ubuntu-latest'
   location: 'Korea Central'
-#  terraformVersion: 1.1.7
-#  azureSubscriptionServiceConnectionName: 'svcconn4lds'
   subscription: 'svcconn4lds'
-#  resourceGroup: 'tf2022demo-rg'
-#  storageAccount: 'bgzbtfstate'
-#  container: 'bgzbtfstatecont'
-#  tfstateFile: 'tfstate'
-  anyIfChange: false
 
 pool:
   vmImage: $(vmImageName)
 
 steps:
-
-#- task: TerraformInstaller@0
-#  inputs:
-#    terraformVersion: '$(terraformVersion)'
-
 - task: Bash@3
   displayName: 'Install Terraform'
   inputs:
@@ -34,16 +22,6 @@ steps:
       sudo mv terraform /usr/local/bin
       terraform --version
       rm terraform.zip
-#- task: TerraformTaskV2@2
-#  displayName: terraform init
-#  inputs:
-#    provider: 'azurerm'
-#    command: 'init'
-#    backendServiceArm: 'svcconn4lds'
-#    backendAzureRmResourceGroupName: '$(resourceGroup)'
-#    backendAzureRmStorageAccountName: '$(storageAccount)'
-#    backendAzureRmContainerName: '$(container)'
-#    backendAzureRmKey: '$(tfstateFile)'
 
 - task: Bash@3
   displayName: 'Terraform Init'
@@ -54,7 +32,6 @@ steps:
     ARM_TENANT_ID: $(AZURE_TENANT_ID)
   inputs:
     targetType: 'inline'
-    #workingDirectory: $(project_folder)
     workingDirectory: '$(System.DefaultWorkingDirectory)'
     script: |
       set -euo pipefail    
@@ -72,13 +49,6 @@ steps:
       echo "Show Terraform Version and Providers"
       terraform -v
       terraform providers
-
-#- task: TerraformTaskV2@2
-#  inputs:
-#    provider: 'azurerm'
-#    command: 'plan'
-#    commandOptions: '-out=tfplan'
-#    environmentServiceNameAzureRM: 'svcconn4lds'
 
 - task: Bash@3
   displayName: 'Terraform Plan'
@@ -112,12 +82,3 @@ steps:
       terraform apply \
       -input=false \
       ${BUILD_BUILDNUMBER}.tfplan
-
-#- task: TerraformTaskV2@2
-#  displayName: terraform apply tfplan
-#  condition: eq(variables.anyTfChanges, true)
-#  inputs:
-#    provider: 'azurerm'
-#    command: 'apply'
-#    commandOptions: 'tfplan'
-#    environmentServiceNameAzureRM: 'svcconn4lds'
