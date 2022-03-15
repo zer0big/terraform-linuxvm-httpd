@@ -49,7 +49,8 @@ steps:
   displayName: 'Terraform Init'
   inputs:
     targetType: 'inline'
-    workingDirectory: $(project_folder)
+    #workingDirectory: $(project_folder)
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
     script: |
       set -euo pipefail
     
@@ -94,11 +95,40 @@ steps:
         Write-Host "There is no change detected in Terraform tfplan file"
       }
     workingDirectory: '$(System.DefaultWorkingDirectory)'
-- task: TerraformTaskV2@2
-  displayName: terraform apply tfplan
-  condition: eq(variables.anyTfChanges, true)
+
+- task: Bash@3
+  displayName: 'Terraform Plan'
   inputs:
-    provider: 'azurerm'
-    command: 'apply'
-    commandOptions: 'tfplan'
-    environmentServiceNameAzureRM: 'svcconn4lds'
+    targetType: 'inline'
+    #workingDirectory: $(project_folder)
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
+    script: |
+      set -euo pipefail
+      
+	  terraform plan \
+        -input=false \
+#        -var="resource_group_name=${AZURE_ENV_RG}" \
+        -out ${BUILD_BUILDNUMBER}.tfplan
+
+
+- task: Bash@3
+  displayName: 'Terraform Apply'
+  inputs:
+    targetType: 'inline'
+    #workingDirectory: $(project_folder)
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
+    script: |
+      set -euo pipefail
+
+      terraform apply \
+      -input=false \
+      ${BUILD_BUILDNUMBER}.tfplan
+
+#- task: TerraformTaskV2@2
+#  displayName: terraform apply tfplan
+#  condition: eq(variables.anyTfChanges, true)
+#  inputs:
+#    provider: 'azurerm'
+#    command: 'apply'
+#    commandOptions: 'tfplan'
+#    environmentServiceNameAzureRM: 'svcconn4lds'
