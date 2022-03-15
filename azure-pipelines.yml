@@ -23,7 +23,7 @@ steps:
 #    terraformVersion: '$(terraformVersion)'
 
 - task: Bash@3
-  displayName: 'Pin Terraform'
+  displayName: 'Install Terraform'
   inputs:
     targetType: 'inline'
     script: |
@@ -47,13 +47,17 @@ steps:
 
 - task: Bash@3
   displayName: 'Terraform Init'
+  env:
+    ARM_CLIENT_ID: $(AZURE_CLIENT_ID)
+    ARM_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
+    ARM_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
+    ARM_TENANT_ID: $(AZURE_TENANT_ID)
   inputs:
     targetType: 'inline'
     #workingDirectory: $(project_folder)
     workingDirectory: '$(System.DefaultWorkingDirectory)'
     script: |
-      set -euo pipefail
-    
+      set -euo pipefail    
       echo "Initialize"
       terraform init \
         -input=false \
