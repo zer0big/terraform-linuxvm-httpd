@@ -4,43 +4,76 @@ trigger:
 variables:
   vmImageName: 'ubuntu-latest'
   location: 'Korea Central'
-  terraformVersion: 1.1.7
-  azureSubscriptionServiceConnectionName: 'svcconn4lds'
+#  terraformVersion: 1.1.7
+#  azureSubscriptionServiceConnectionName: 'svcconn4lds'
   subscription: 'svcconn4lds'
-  resourceGroup: 'tf2022demo-rg'
-  storageAccount: 'bgzbtfstate'
-  storageAccountSku: 'Standard_LRS'
-  container: 'bgzbtfstatecont'
-  tfstateFile: 'tfstate'
+#  resourceGroup: 'tf2022demo-rg'
+#  storageAccount: 'bgzbtfstate'
+#  container: 'bgzbtfstatecont'
+#  tfstateFile: 'tfstate'
   anyIfChange: false
 
 pool:
   vmImage: $(vmImageName)
 
-
 steps:
 
-- task: TerraformInstaller@0
-  inputs:
-    terraformVersion: '1.1.7'
+#- task: TerraformInstaller@0
+#  inputs:
+#    terraformVersion: '$(terraformVersion)'
 
-- task: TerraformTaskV2@2
-  displayName: terraform init
+- task: Bash@3
+  displayName: 'Pin Terraform'
   inputs:
-    provider: 'azurerm'
-    command: 'init'
-    backendServiceArm: 'svcconn4lds'
-    backendAzureRmResourceGroupName: '$(resourceGroup)'
-    backendAzureRmStorageAccountName: '$(storageAccount)'
-    backendAzureRmContainerName: '$(container)'
-    backendAzureRmKey: '$(tfstateFile)'
+    targetType: 'inline'
+    script: |
+      set -eu  # fail on error
+      curl -SL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" --output terraform.zip
+      echo "${TERRAFORM_DOWNLOAD_SHA} terraform.zip" | sha256sum -c -
+      unzip "terraform.zip"
+      sudo mv terraform /usr/local/bin
+      terraform --version
+      rm terraform.zip
+#- task: TerraformTaskV2@2
+#  displayName: terraform init
+#  inputs:
+#    provider: 'azurerm'
+#    command: 'init'
+#    backendServiceArm: 'svcconn4lds'
+#    backendAzureRmResourceGroupName: '$(resourceGroup)'
+#    backendAzureRmStorageAccountName: '$(storageAccount)'
+#    backendAzureRmContainerName: '$(container)'
+#    backendAzureRmKey: '$(tfstateFile)'
 
-- task: TerraformTaskV2@2
+- task: Bash@3
+  displayName: 'Terraform Init'
   inputs:
-    provider: 'azurerm'
-    command: 'plan'
-    commandOptions: '-out=tfplan'
-    environmentServiceNameAzureRM: 'svcconn4lds'
+    targetType: 'inline'
+    workingDirectory: $(project_folder)
+    script: |
+      set -euo pipefail
+    
+      echo "Initialize"
+      terraform init \
+        -input=false \
+        -backend-config="resource_group_name=${TF_STORAGE_RG}" \
+        -backend-config="storage_account_name=${TF_STORAGE_ACCOUNT}" \
+        -backend-config="container_name=${TF_STORAGE_BLOB_CONTAINER}" \
+        -backend-config="key=${TF_STORAGE_BLOB_NAME}" 
+    
+      echo "Sanity Check"
+      terraform validate
+    
+      echo "Show Terraform Version and Providers"
+      terraform -v
+      terraform providers
+
+#- task: TerraformTaskV2@2
+#  inputs:
+#    provider: 'azurerm'
+#    command: 'plan'
+#    commandOptions: '-out=tfplan'
+#    environmentServiceNameAzureRM: 'svcconn4lds'
 
 - task: PowerShell@2
   displayName: detect any terraform change
