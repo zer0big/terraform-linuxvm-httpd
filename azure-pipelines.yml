@@ -28,7 +28,7 @@ steps:
   env:
     ARM_CLIENT_ID: $(AppId)
     ARM_CLIENT_SECRET: $(AppSecret)
-    ARM_SUBSCRIPTION_ID: $(SubId)
+    ARM_SUBSCRIPTION_ID: $(svcconn4lds)
     ARM_TENANT_ID: $(AZURE_TENANT_ID)
   inputs:
     targetType: 'inline'
