@@ -26,9 +26,9 @@ steps:
 - task: Bash@3
   displayName: 'Terraform Init'
   env:
-    ARM_CLIENT_ID: $(AppId)
-    ARM_CLIENT_SECRET: $(AppSecret)
-    ARM_SUBSCRIPTION_ID: $(SubId)
+    ARM_CLIENT_ID: $($(AZURE_CLIENT_ID))
+    ARM_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
+    ARM_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
     ARM_TENANT_ID: $(AZURE_TENANT_ID)
   inputs:
     targetType: 'inline'
