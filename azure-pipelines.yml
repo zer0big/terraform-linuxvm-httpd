@@ -105,7 +105,7 @@ steps:
     script: |
       set -euo pipefail
       
-	  terraform plan \
+	    terraform plan \
         -input=false \
 #        -var="resource_group_name=${AZURE_ENV_RG}" \
         -out ${BUILD_BUILDNUMBER}.tfplan
