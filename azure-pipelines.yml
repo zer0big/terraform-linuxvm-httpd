@@ -22,8 +22,6 @@ steps:
       sudo mv terraform /usr/local/bin
       terraform --version
       rm terraform.zip
-      echo $(TntId)
-      echo $(AZURE_TENANT_ID)
 
 - task: Bash@3
   displayName: 'Terraform Init'
